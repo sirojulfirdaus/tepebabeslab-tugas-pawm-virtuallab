@@ -1,0 +1,203 @@
+/* Compact: under 640px */
+@media (max-width: 39.9375rem) {
+  .page-shell {
+    width: min(100% - 1.25rem, var(--content-width));
+  }
+
+  .site-header__inner {
+    min-height: auto;
+    align-items: flex-start;
+    flex-direction: column;
+    padding-block: var(--space-3);
+  }
+
+  .site-nav {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .site-nav__link {
+    padding-left: 0;
+  }
+
+  .library-intro {
+    padding-bottom: var(--space-8);
+  }
+
+  .featured-lab {
+    gap: var(--space-4);
+  }
+
+  .catalogue-section__heading,
+  .lab-card__footer,
+  .lab-workspace__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .catalogue-section__heading {
+    display: flex;
+  }
+
+  .lab-card {
+    min-height: 0;
+  }
+
+  .lab-card__footer .button,
+  .workspace-actions .button {
+    flex: 1;
+  }
+
+  .lab-workspace__header {
+    display: flex;
+  }
+
+  .workspace-actions {
+    width: 100%;
+  }
+
+  .lab-stage {
+    min-height: 20rem;
+    padding: var(--space-6);
+  }
+
+  .lab-stage.lab-stage--interactive {
+    min-height: 0;
+    padding: var(--space-2);
+  }
+
+  .lab-canvas {
+    height: 20rem;
+  }
+
+  .lab-control-actions {
+    flex-direction: column;
+  }
+
+  .lab-control-actions .button {
+    width: 100%;
+  }
+
+  .result-list__row {
+    grid-template-columns: minmax(6.5rem, 1fr) minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .chemistry-bench {
+    min-height: 24rem;
+    padding: var(--space-3);
+  }
+
+  .beaker-vessel {
+    width: 10.5rem;
+    height: 14rem;
+  }
+
+  .chemistry-result {
+    grid-template-columns: 1fr;
+  }
+
+  .ordering-board,
+  .decision-model,
+  .pacing-visual,
+  .scenario-view,
+  .sentence-structure-board,
+  .sentence-builder {
+    min-height: 24rem;
+    padding: var(--space-4);
+  }
+
+  .sort-sequence {
+    gap: var(--space-2);
+  }
+
+  .number-block {
+    width: clamp(2.75rem, 15vw, 3.5rem);
+  }
+
+  .contribution-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .contribution-row__bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .threshold-guide {
+    align-items: center;
+    flex-direction: column;
+  }
+
+  .effort-meter__labels {
+    font-size: 0.6875rem;
+  }
+
+  .session-bar span {
+    min-width: 3.5rem;
+    font-size: 0.75rem;
+  }
+
+  .intensity-scale {
+    gap: var(--space-1);
+  }
+
+  .scenario-option {
+    min-height: 3.75rem;
+  }
+
+  .sentence-zones {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sentence-zone {
+    min-height: 6.5rem;
+  }
+
+  .fragment-bank,
+  .word-bank,
+  .sentence-line {
+    padding: var(--space-3);
+  }
+}
+
+/* Medium: 640px–959px */
+@media (min-width: 40rem) and (max-width: 59.9375rem) {
+  .lab-catalogue {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .featured-lab {
+    grid-template-columns: minmax(0, 1.65fr) minmax(13rem, 0.75fr);
+  }
+
+  .workspace-lower {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Wide: 960px and above */
+@media (min-width: 60rem) {
+  .featured-lab {
+    grid-template-columns: minmax(0, 1.8fr) minmax(15rem, 0.7fr);
+  }
+
+  .lab-catalogue {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .lab-workspace__layout {
+    grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+    align-items: stretch;
+  }
+
+  .lab-controls {
+    padding: var(--space-6);
+    border-block: 0;
+    border-left: 1px solid var(--color-border);
+  }
+
+  .workspace-lower {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
