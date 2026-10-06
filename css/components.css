@@ -302,6 +302,7 @@
 .workspace-actions {
   display: flex;
   flex-shrink: 0;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
@@ -389,20 +390,67 @@
   margin-bottom: 0;
 }
 
-.lab-feedback[data-tone="success"] {
+.lab-feedback[data-tone="success"],
+.lab-feedback--success {
   background: var(--color-success-soft);
   color: var(--color-success);
 }
 
 .lab-feedback[data-tone="retry"],
-.lab-feedback[data-tone="error"] {
+.lab-feedback[data-tone="error"],
+.lab-feedback--retry,
+.lab-feedback--error {
   background: var(--color-retry-soft);
   color: var(--color-retry);
 }
 
-.lab-feedback[data-tone="info"] {
+.lab-feedback[data-tone="info"],
+.lab-feedback--info {
   background: var(--color-info-soft);
   color: var(--color-info);
+}
+
+.lab-help-dialog {
+  width: min(36rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: var(--space-6);
+  overflow-y: auto;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-medium);
+}
+
+.lab-help-dialog::backdrop {
+  background: rgb(21 32 43 / 54%);
+}
+
+.lab-help-dialog h2 {
+  margin-bottom: var(--space-6);
+}
+
+.lab-help-dialog__content {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.lab-help-dialog__section h3 {
+  margin-bottom: var(--space-1);
+  font-size: 1rem;
+}
+
+.lab-help-dialog__section p,
+.lab-help-dialog__note {
+  margin-bottom: 0;
+  color: var(--color-text-muted);
+}
+
+.lab-help-dialog__note {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-size: 0.875rem;
 }
 
 .lab-stage--interactive {
@@ -541,6 +589,10 @@
   color: var(--color-success);
 }
 
+.challenge-status[data-state="active"] {
+  border-left-color: var(--lab-accent);
+}
+
 .challenge-status[data-state="retry"] {
   border-left-color: var(--color-retry);
   background: var(--color-retry-soft);
@@ -574,7 +626,7 @@
 }
 
 .beaker-drop:hover,
-.beaker-drop.is-drag-over {
+.beaker-drop.is-drop-target {
   border-color: var(--lab-accent);
   background: #edf7f5;
 }
@@ -833,7 +885,8 @@
 }
 
 .number-block:hover,
-.number-block.is-selected {
+.number-block.is-selected,
+.number-block.is-drop-target {
   border-color: var(--lab-accent);
   background: #f0edf7;
 }
@@ -1167,6 +1220,13 @@
 
 .sentence-zone.is-selected {
   border-color: var(--lab-accent);
+}
+
+.sentence-zone.is-drop-target,
+.sentence-line.is-drop-target {
+  border-color: var(--lab-accent);
+  outline: 0.1875rem solid color-mix(in srgb, var(--lab-accent) 28%, transparent);
+  outline-offset: 0.125rem;
 }
 
 .sentence-zone[data-result="correct"] {

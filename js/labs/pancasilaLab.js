@@ -104,7 +104,7 @@ export function createPancasilaLab(regions) {
   const scenarioView = createElement("article", "scenario-view");
   regions.stage.replaceChildren(stageTitle, scenarioView);
 
-  const nextButton = createElement("button", "button button--primary", "Next Scenario");
+  const nextButton = createElement("button", "button button--primary", "Next");
   nextButton.type = "button";
   regions.controls.replaceChildren(
     createElement(
@@ -156,13 +156,13 @@ export function createPancasilaLab(regions) {
 
     nextButton.disabled = state.selectedOption === null;
     nextButton.textContent =
-      state.scenarioIndex === SCENARIOS.length - 1 ? "Restart Scenarios" : "Next Scenario";
+      state.scenarioIndex === SCENARIOS.length - 1 ? "Restart" : "Next";
 
     if (state.selectedOption === null) {
       reflection.replaceChildren(
         createElement("p", "scenario-reflection__empty", "Select a response to reveal its values and trade-offs.")
       );
-      challengeStatus.dataset.state = "pending";
+      challengeStatus.dataset.state = "idle";
       challengeStatus.textContent = "Choose a response and consider the explanation before moving on.";
       return;
     }

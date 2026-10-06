@@ -142,7 +142,6 @@ export function createPhysicsLab(regions) {
   );
 
   const challengeStatus = createElement("p", "challenge-status");
-  challengeStatus.setAttribute("role", "status");
   regions.challenge.replaceChildren(
     createElement("h2", "", "Target challenge"),
     createElement(
@@ -161,6 +160,7 @@ export function createPhysicsLab(regions) {
     state.running = false;
     animationStart = null;
     launchButton.textContent = "Launch";
+    launchButton.setAttribute("aria-label", "Launch projectile");
   }
 
   function updateResults() {
@@ -288,9 +288,14 @@ export function createPhysicsLab(regions) {
     context.fillText(`${Math.round(xMax)} m`, transform.right, groundY + 8);
   }
 
-  function setChallengePending() {
-    challengeStatus.dataset.state = "pending";
+  function setChallengeActive() {
+    challengeStatus.dataset.state = "active";
     challengeStatus.textContent = "Launch the projectile to test this setup against the target.";
+  }
+
+  function setChallengeIdle() {
+    challengeStatus.dataset.state = "idle";
+    challengeStatus.textContent = "Adjust the controls or launch when you are ready to begin.";
   }
 
   function evaluateLanding(range) {
@@ -335,7 +340,8 @@ export function createPhysicsLab(regions) {
 
     animationFrameId = null;
     state.running = false;
-    launchButton.textContent = "Launch Again";
+    launchButton.textContent = "Launch";
+    launchButton.setAttribute("aria-label", "Launch projectile again");
     evaluateLanding(motion.range);
   }
 
@@ -344,8 +350,9 @@ export function createPhysicsLab(regions) {
     animationProgress = 0;
     state.elapsedTime = 0;
     state.running = true;
-    launchButton.textContent = "Restart Launch";
-    setChallengePending();
+    launchButton.textContent = "Launch";
+    launchButton.setAttribute("aria-label", "Restart current projectile launch");
+    setChallengeActive();
     updateFeedback(regions.feedback, "Projectile launched — watch the path build toward the ground.", "info");
     animationFrameId = requestAnimationFrame(animate);
   }
@@ -355,7 +362,7 @@ export function createPhysicsLab(regions) {
     animationProgress = 0;
     state.elapsedTime = 0;
     updateResults();
-    setChallengePending();
+    setChallengeActive();
     updateFeedback(
       regions.feedback,
       "Prediction updated. Launch to compare the path with the target zone.",
@@ -371,7 +378,7 @@ export function createPhysicsLab(regions) {
     speedControl.input.value = String(state.velocity);
     angleControl.input.value = String(state.angleDeg);
     updateResults();
-    setChallengePending();
+    setChallengeIdle();
     updateFeedback(
       regions.feedback,
       "Controls reset to 20 m/s at 45°. Adjust them or launch the projectile.",

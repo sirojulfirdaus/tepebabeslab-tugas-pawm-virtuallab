@@ -27,6 +27,7 @@ function classifyScore(score) {
 export function createAiLab(regions) {
   const state = { ...DEFAULT_STATE };
   const eventController = new AbortController();
+  let hasInteracted = false;
   const controls = new Map();
   const contributionBars = new Map();
   const contributionValues = new Map();
@@ -79,6 +80,7 @@ export function createAiLab(regions) {
       "input",
       (event) => {
         state[factor.key] = Number(event.currentTarget.value);
+        hasInteracted = true;
         update();
       },
       { signal: eventController.signal }
@@ -146,10 +148,12 @@ export function createAiLab(regions) {
           : "The score remains below the review threshold.";
 
     const challengeMet = score >= 70 && state.engagement < 50;
-    challengeStatus.dataset.state = challengeMet ? "success" : "pending";
+    challengeStatus.dataset.state = challengeMet ? "success" : hasInteracted ? "active" : "idle";
     challengeStatus.textContent = challengeMet
       ? `Challenge met — score ${score.toFixed(1)} recommends content with engagement at ${state.engagement}.`
-      : `Not yet met — score ${score.toFixed(1)}, engagement ${state.engagement}. Keep engagement below 50 and reach 70.`;
+      : hasInteracted
+        ? `Keep adjusting — score ${score.toFixed(1)}, engagement ${state.engagement}. Keep engagement below 50 and reach 70.`
+        : "Adjust the factors when you are ready to begin the threshold challenge.";
     updateFeedback(
       regions.feedback,
       challengeMet
@@ -161,6 +165,7 @@ export function createAiLab(regions) {
 
   function reset() {
     Object.assign(state, DEFAULT_STATE);
+    hasInteracted = false;
     controls.forEach((control, key) => {
       control.input.value = String(state[key]);
     });

@@ -54,6 +54,7 @@
 
   .workspace-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .lab-stage {
@@ -158,6 +159,12 @@
   .word-bank,
   .sentence-line {
     padding: var(--space-3);
+  }
+
+  .lab-help-dialog {
+    width: calc(100% - 1.25rem);
+    max-height: calc(100dvh - 1.25rem);
+    padding: var(--space-4);
   }
 }
 

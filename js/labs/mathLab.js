@@ -69,6 +69,7 @@ function createRangeControl({ id, label, min, max, step, value, signal, onInput 
 export function createMathLab(regions) {
   const state = { ...DEFAULT_STATE };
   const eventController = new AbortController();
+  let hasInteracted = false;
 
   regions.stage.classList.add("lab-stage--interactive", "lab-stage--canvas");
   const figure = createElement("figure", "simulation-figure");
@@ -107,6 +108,7 @@ export function createMathLab(regions) {
       signal: eventController.signal,
       onInput: (event) => {
         state[definition.key] = Number(event.currentTarget.value);
+        hasInteracted = true;
         update();
       }
     });
@@ -118,7 +120,6 @@ export function createMathLab(regions) {
   const observationTitle = createElement("h2", "", "Graph information");
   const equationLabel = createElement("p", "result-label", "Current equation");
   const equationOutput = createElement("output", "equation-output");
-  equationOutput.setAttribute("aria-live", "polite");
   const resultList = createElement("dl", "result-list");
   const typeValue = createElement("dd");
   const directionValue = createElement("dd");
@@ -136,7 +137,6 @@ export function createMathLab(regions) {
   regions.observation.replaceChildren(observationTitle, equationLabel, equationOutput, resultList);
 
   const challengeStatus = createElement("p", "challenge-status");
-  challengeStatus.setAttribute("role", "status");
   regions.challenge.replaceChildren(
     createElement("h2", "", "Coefficient challenge"),
     createElement(
@@ -255,15 +255,19 @@ export function createMathLab(regions) {
     }
 
     const challengeMet = Boolean(vertex && state.a < 0 && vertex.y > 0);
-    challengeStatus.dataset.state = challengeMet ? "success" : "pending";
+    challengeStatus.dataset.state = challengeMet ? "success" : hasInteracted ? "active" : "idle";
     challengeStatus.textContent = challengeMet
       ? "Challenge met — the negative a value opens the curve downward, and the vertex is above y = 0."
-      : "Not yet met — use a negative a value and move the vertex above y = 0.";
+      : hasInteracted
+        ? "Keep adjusting — use a negative a value and move the vertex above y = 0."
+        : "Adjust the coefficients when you are ready to begin the challenge.";
     updateFeedback(
       regions.feedback,
       challengeMet
         ? "Success: this parabola opens downward with its highest point above the x-axis."
-        : "Adjust a, b, and c to see how each coefficient changes the curve.",
+        : hasInteracted
+          ? "Keep adjusting a, b, and c; the graph and vertex respond immediately."
+          : "Adjust a, b, and c to see how each coefficient changes the curve.",
       challengeMet ? "success" : "info"
     );
     drawGraph();
@@ -273,6 +277,7 @@ export function createMathLab(regions) {
 
   function reset() {
     Object.assign(state, DEFAULT_STATE);
+    hasInteracted = false;
     Object.entries(controls).forEach(([key, control]) => {
       control.input.value = String(state[key]);
     });

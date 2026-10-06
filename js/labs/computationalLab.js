@@ -32,7 +32,7 @@ export function createComputationalLab(regions) {
   board.append(instruction, sequence);
   regions.stage.replaceChildren(stageTitle, board);
 
-  const resetButton = createElement("button", "button button--secondary", "Reset sequence");
+  const resetButton = createElement("button", "button button--secondary", "Reset");
   resetButton.type = "button";
   regions.controls.replaceChildren(
     createElement(
@@ -87,10 +87,12 @@ export function createComputationalLab(regions) {
     orderOutput.textContent = orderOutput.value;
     stateOutput.value = sorted ? "Sorted" : "Not sorted";
     stateOutput.textContent = stateOutput.value;
-    challengeStatus.dataset.state = sorted ? "success" : "pending";
+    challengeStatus.dataset.state = sorted ? "success" : state.moves > 0 ? "active" : "idle";
     challengeStatus.textContent = sorted
       ? `Sorted in ${state.moves} ${state.moves === 1 ? "move" : "moves"}. Local changes produced a globally ordered sequence.`
-      : "Not yet sorted — compare each value with the value immediately beside it.";
+      : state.moves > 0
+        ? "Keep sorting — compare each value with the value immediately beside it."
+        : "Move or swap a block when you are ready to begin.";
 
     if (sorted) {
       updateFeedback(
@@ -149,9 +151,21 @@ export function createComputationalLab(regions) {
   sequence.addEventListener(
     "dragover",
     (event) => {
-      if (!event.target.closest(".number-block")) return;
+      const target = event.target.closest(".number-block");
+      if (!target) return;
       event.preventDefault();
       event.dataTransfer.dropEffect = "move";
+      sequence.querySelectorAll(".is-drop-target").forEach((block) => {
+        block.classList.toggle("is-drop-target", block === target);
+      });
+    },
+    { signal: eventController.signal }
+  );
+  sequence.addEventListener(
+    "dragleave",
+    (event) => {
+      const target = event.target.closest(".number-block");
+      if (target && !target.contains(event.relatedTarget)) target.classList.remove("is-drop-target");
     },
     { signal: eventController.signal }
   );
@@ -171,7 +185,12 @@ export function createComputationalLab(regions) {
   );
   sequence.addEventListener(
     "dragend",
-    (event) => event.target.closest(".number-block")?.classList.remove("is-dragging"),
+    (event) => {
+      event.target.closest(".number-block")?.classList.remove("is-dragging");
+      sequence.querySelectorAll(".is-drop-target").forEach((block) =>
+        block.classList.remove("is-drop-target")
+      );
+    },
     { signal: eventController.signal }
   );
 

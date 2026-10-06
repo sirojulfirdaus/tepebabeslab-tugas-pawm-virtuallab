@@ -60,7 +60,7 @@ export function createIndonesianLab(regions) {
 
   const checkButton = createElement("button", "button button--primary", "Check Answer");
   checkButton.type = "button";
-  const nextButton = createElement("button", "button button--secondary", "Next Sentence");
+  const nextButton = createElement("button", "button button--secondary", "Next");
   nextButton.type = "button";
   nextButton.disabled = true;
   const actionRow = createElement("div", "lab-control-actions");
@@ -175,7 +175,13 @@ export function createIndonesianLab(regions) {
     progressOutput.textContent = progressOutput.value;
     const placedCount = assignedFragments.size;
     placementOutput.textContent = `${placedCount} of ${ROLES.length} fragments placed.`;
-    challengeStatus.dataset.state = state.completed ? "success" : state.checked ? "retry" : "pending";
+    challengeStatus.dataset.state = state.completed
+      ? "success"
+      : state.checked
+        ? "retry"
+        : placedCount > 0
+          ? "active"
+          : "idle";
     if (state.completed) {
       challengeStatus.textContent = `Correct — ${exercise.explanation}`;
     } else if (state.checked) {
@@ -184,6 +190,8 @@ export function createIndonesianLab(regions) {
     } else {
       challengeStatus.textContent = "Arrange all four fragments, then check the sentence structure.";
     }
+    nextButton.textContent =
+      state.completed && state.exerciseIndex === EXERCISES.length - 1 ? "Restart" : "Next";
   }
 
   sentenceBoard.addEventListener(
@@ -230,9 +238,21 @@ export function createIndonesianLab(regions) {
   sentenceBoard.addEventListener(
     "dragover",
     (event) => {
-      if (!event.target.closest(".sentence-zone")) return;
+      const zone = event.target.closest(".sentence-zone");
+      if (!zone) return;
       event.preventDefault();
       event.dataTransfer.dropEffect = "move";
+      sentenceBoard.querySelectorAll(".sentence-zone.is-drop-target").forEach((target) => {
+        target.classList.toggle("is-drop-target", target === zone);
+      });
+    },
+    { signal: eventController.signal }
+  );
+  sentenceBoard.addEventListener(
+    "dragleave",
+    (event) => {
+      const zone = event.target.closest(".sentence-zone");
+      if (zone && !zone.contains(event.relatedTarget)) zone.classList.remove("is-drop-target");
     },
     { signal: eventController.signal }
   );
@@ -242,6 +262,7 @@ export function createIndonesianLab(regions) {
       const zone = event.target.closest(".sentence-zone");
       if (!zone) return;
       event.preventDefault();
+      zone.classList.remove("is-drop-target");
       const fragmentId = getDragPayload(event);
       if (fragmentId) placeFragment(fragmentId, zone.dataset.role);
     },
@@ -249,7 +270,12 @@ export function createIndonesianLab(regions) {
   );
   sentenceBoard.addEventListener(
     "dragend",
-    (event) => event.target.closest("[data-fragment-id]")?.classList.remove("is-dragging"),
+    (event) => {
+      event.target.closest("[data-fragment-id]")?.classList.remove("is-dragging");
+      sentenceBoard.querySelectorAll(".is-drop-target").forEach((zone) =>
+        zone.classList.remove("is-drop-target")
+      );
+    },
     { signal: eventController.signal }
   );
 
@@ -287,11 +313,14 @@ export function createIndonesianLab(regions) {
     "click",
     () => {
       if (!state.completed) return;
-      state.exerciseIndex = (state.exerciseIndex + 1) % EXERCISES.length;
+      const isRestart = state.exerciseIndex === EXERCISES.length - 1;
+      state.exerciseIndex = isRestart ? 0 : state.exerciseIndex + 1;
       resetCurrent();
       updateFeedback(
         regions.feedback,
-        `Sentence ${state.exerciseIndex + 1} ready. Arrange its S, P, O, and K elements.`,
+        isRestart
+          ? "All sentence structures completed. The exercises have restarted at sentence 1."
+          : `Sentence ${state.exerciseIndex + 1} ready. Arrange its S, P, O, and K elements.`,
         "info"
       );
     },

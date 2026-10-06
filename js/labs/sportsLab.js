@@ -31,6 +31,7 @@ function classifyEffort(score) {
 export function createSportsLab(regions) {
   const state = { ...DEFAULT_STATE };
   const eventController = new AbortController();
+  let hasInteracted = false;
   const controls = new Map();
 
   regions.stage.classList.add("lab-stage--interactive");
@@ -93,6 +94,7 @@ export function createSportsLab(regions) {
       "input",
       (event) => {
         state[definition.key] = Number(event.currentTarget.value);
+        hasInteracted = true;
         update();
       },
       { signal: eventController.signal }
@@ -168,10 +170,12 @@ export function createSportsLab(regions) {
     )}% of its unrecovered value. Intensity raises effort directly; rest moderates it.`;
 
     const challengeMet = zone === "Moderate" && state.duration >= 30;
-    challengeStatus.dataset.state = challengeMet ? "success" : "pending";
+    challengeStatus.dataset.state = challengeMet ? "success" : hasInteracted ? "active" : "idle";
     challengeStatus.textContent = challengeMet
       ? `Challenge met — ${state.duration} minutes produces a ${zone} score of ${result.effortScore.toFixed(1)}.`
-      : `Not yet met — current zone is ${zone} at ${state.duration} minutes.`;
+      : hasInteracted
+        ? `Keep adjusting — current zone is ${zone} at ${state.duration} minutes.`
+        : "Adjust the session when you are ready to begin the pacing challenge.";
     updateFeedback(
       regions.feedback,
       challengeMet
@@ -183,6 +187,7 @@ export function createSportsLab(regions) {
 
   function reset() {
     Object.assign(state, DEFAULT_STATE);
+    hasInteracted = false;
     update();
   }
 

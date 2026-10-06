@@ -144,7 +144,6 @@ export function createChemistryLab(regions) {
   );
 
   const challengeStatus = createElement("p", "challenge-status");
-  challengeStatus.setAttribute("role", "status");
   regions.challenge.replaceChildren(
     createElement("h2", "", "Neutral-zone challenge"),
     createElement("p", "challenge-prompt", "Create a mixture with pH between 6 and 8."),
@@ -211,7 +210,11 @@ export function createChemistryLab(regions) {
     );
     renderHistory();
 
-    challengeStatus.dataset.state = challengeMet ? "success" : "pending";
+    challengeStatus.dataset.state = challengeMet
+      ? "success"
+      : state.portions.length > 0
+        ? "active"
+        : "idle";
     challengeStatus.textContent = challengeMet
       ? `Challenge met — pH ${ph.toFixed(1)} is inside the 6–8 target range.`
       : ph === null
@@ -253,20 +256,24 @@ export function createChemistryLab(regions) {
     "dragenter",
     (event) => {
       event.preventDefault();
-      beakerButton.classList.add("is-drag-over");
+      beakerButton.classList.add("is-drop-target");
     },
     { signal: eventController.signal }
   );
   beakerButton.addEventListener(
     "dragleave",
-    () => beakerButton.classList.remove("is-drag-over"),
+    (event) => {
+      if (!beakerButton.contains(event.relatedTarget)) {
+        beakerButton.classList.remove("is-drop-target");
+      }
+    },
     { signal: eventController.signal }
   );
   beakerButton.addEventListener(
     "drop",
     (event) => {
       event.preventDefault();
-      beakerButton.classList.remove("is-drag-over");
+      beakerButton.classList.remove("is-drop-target");
       addSubstance(event.dataTransfer.getData("text/plain"));
     },
     { signal: eventController.signal }
@@ -294,7 +301,7 @@ export function createChemistryLab(regions) {
       button.setAttribute("aria-pressed", "false");
       button.classList.remove("is-selected", "is-dragging");
     });
-    beakerButton.classList.remove("is-drag-over");
+    beakerButton.classList.remove("is-drop-target");
     renderMixture();
     updateFeedback(
       regions.feedback,

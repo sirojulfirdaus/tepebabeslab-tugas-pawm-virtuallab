@@ -5,6 +5,7 @@ export function createFeedback(message = "", tone = "neutral") {
   feedback.className = "lab-feedback";
   feedback.setAttribute("role", tone === "error" ? "alert" : "status");
   feedback.setAttribute("aria-live", tone === "error" ? "assertive" : "polite");
+  feedback.setAttribute("aria-atomic", "true");
 
   const text = document.createElement("p");
   feedback.append(text);
@@ -25,8 +26,16 @@ export function updateFeedback(feedback, message, tone = "neutral") {
     feedback.append(text);
   }
 
+  const previousTone = feedback.dataset.tone;
+  const previousMessage = text.textContent;
+  feedbackTones.forEach((availableTone) => {
+    feedback.classList.toggle(`lab-feedback--${availableTone}`, availableTone === safeTone);
+  });
   feedback.dataset.tone = safeTone;
   feedback.setAttribute("role", safeTone === "error" ? "alert" : "status");
   feedback.setAttribute("aria-live", safeTone === "error" ? "assertive" : "polite");
-  text.textContent = message;
+
+  if (previousTone !== safeTone || previousMessage !== message) {
+    text.textContent = message;
+  }
 }

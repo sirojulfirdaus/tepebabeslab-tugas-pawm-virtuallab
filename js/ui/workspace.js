@@ -1,3 +1,4 @@
+import { labInstructions } from "../data/labInstructions.js";
 import { createFeedback } from "./feedback.js";
 
 function createElement(tagName, className, text) {
@@ -37,12 +38,14 @@ export function renderWorkspace(root, { lab, onBack, onReset }) {
   const actions = createElement("div", "workspace-actions");
   const backButton = createElement("button", "button button--secondary", "Back to Labs");
   backButton.type = "button";
-  const resetButton = createElement("button", "button button--secondary", "Reset Lab");
+  const helpButton = createElement("button", "button button--secondary", "How to Use");
+  helpButton.type = "button";
+  const resetButton = createElement("button", "button button--secondary", "Reset");
   resetButton.type = "button";
   resetButton.dataset.labReset = "";
   resetButton.disabled = true;
   resetButton.title = "Reset becomes available when the interactive lab is mounted.";
-  actions.append(backButton, resetButton);
+  actions.append(backButton, helpButton, resetButton);
   header.append(heading, actions);
 
   const layout = createElement("div", "lab-workspace__layout");
@@ -97,13 +100,54 @@ export function renderWorkspace(root, { lab, onBack, onReset }) {
   feedback.dataset.labFeedback = "";
   lower.append(observation, challenge, feedback);
 
-  workspace.append(header, layout, lower);
+  const instructions = labInstructions[lab.id];
+  const helpDialog = createElement("dialog", "lab-help-dialog");
+  helpDialog.setAttribute("aria-labelledby", "lab-help-title");
+  const helpTitle = createElement("h2", "", `How to use ${lab.title}`);
+  helpTitle.id = "lab-help-title";
+  const helpContent = createElement("div", "lab-help-dialog__content");
+  [
+    ["Manipulate", instructions?.manipulate ?? "Use the controls to change the experiment."],
+    ["Observe", instructions?.observe ?? "Watch the stage and observations respond."],
+    ["Challenge", instructions?.challenge ?? "Use the challenge prompt to test what you notice."]
+  ].forEach(([label, copy]) => {
+    const section = createElement("section", "lab-help-dialog__section");
+    section.append(createElement("h3", "", label), createElement("p", "", copy));
+    helpContent.append(section);
+  });
+  if (instructions?.note) {
+    helpContent.append(createElement("p", "lab-help-dialog__note", instructions.note));
+  }
+  const closeHelpButton = createElement("button", "button button--primary", "Close");
+  closeHelpButton.type = "button";
+  helpDialog.append(helpTitle, helpContent, closeHelpButton);
+
+  workspace.append(header, layout, lower, helpDialog);
   root.replaceChildren(workspace);
 
   const handleBack = () => onBack();
   const handleReset = () => onReset();
+  const handleHelp = () => {
+    if (typeof helpDialog.showModal === "function") {
+      helpDialog.showModal();
+    } else {
+      helpDialog.setAttribute("open", "");
+    }
+  };
+  const handleCloseHelp = () => {
+    if (typeof helpDialog.close === "function" && helpDialog.open) {
+      helpDialog.close();
+    } else {
+      helpDialog.removeAttribute("open");
+      helpButton.focus();
+    }
+  };
+  const handleDialogClose = () => helpButton.focus();
   backButton.addEventListener("click", handleBack);
+  helpButton.addEventListener("click", handleHelp);
   resetButton.addEventListener("click", handleReset);
+  closeHelpButton.addEventListener("click", handleCloseHelp);
+  helpDialog.addEventListener("close", handleDialogClose);
 
   return {
     stage,
@@ -118,11 +162,17 @@ export function renderWorkspace(root, { lab, onBack, onReset }) {
         : "Reset becomes available when the interactive lab is mounted.";
     },
     focusTitle() {
-      title.focus({ preventScroll: true });
+      title.focus();
     },
     destroy() {
+      if (helpDialog.open && typeof helpDialog.close === "function") {
+        helpDialog.close();
+      }
       backButton.removeEventListener("click", handleBack);
+      helpButton.removeEventListener("click", handleHelp);
       resetButton.removeEventListener("click", handleReset);
+      closeHelpButton.removeEventListener("click", handleCloseHelp);
+      helpDialog.removeEventListener("close", handleDialogClose);
       root.replaceChildren();
     }
   };

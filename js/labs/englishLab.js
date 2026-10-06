@@ -62,11 +62,11 @@ export function createEnglishLab(regions) {
   const builder = createElement("div", "sentence-builder");
   regions.stage.replaceChildren(stageTitle, builder);
 
-  const checkButton = createElement("button", "button button--primary", "Check Sentence");
+  const checkButton = createElement("button", "button button--primary", "Check Answer");
   checkButton.type = "button";
-  const clearButton = createElement("button", "button button--secondary", "Clear Sentence");
+  const clearButton = createElement("button", "button button--secondary", "Reset");
   clearButton.type = "button";
-  const nextButton = createElement("button", "button button--secondary", "Next Sentence");
+  const nextButton = createElement("button", "button button--secondary", "Next");
   nextButton.type = "button";
   nextButton.disabled = true;
   const actionRow = createElement("div", "lab-control-actions");
@@ -138,13 +138,21 @@ export function createEnglishLab(regions) {
     progressOutput.textContent = progressOutput.value;
     sentenceOutput.value = displaySentence;
     sentenceOutput.textContent = displaySentence || "No words arranged yet.";
-    challengeStatus.dataset.state = state.completed ? "success" : state.checked ? "retry" : "pending";
+    challengeStatus.dataset.state = state.completed
+      ? "success"
+      : state.checked
+        ? "retry"
+        : state.arrangement.length > 0
+          ? "active"
+          : "idle";
     challengeStatus.textContent = state.completed
       ? `Correct — ${exercise.explanation}`
       : state.checked
         ? `Try again — ${exercise.hint}`
         : "Use every word and check the completed sentence.";
     nextButton.disabled = !state.completed;
+    nextButton.textContent =
+      state.completed && state.exerciseIndex === EXERCISES.length - 1 ? "Restart" : "Next";
   }
 
   function invalidateCheck() {
@@ -189,9 +197,21 @@ export function createEnglishLab(regions) {
   builder.addEventListener(
     "dragover",
     (event) => {
-      if (!event.target.closest("[data-sentence-drop], .word-token[data-location='sentence']")) return;
+      const sentenceLine = event.target.closest("[data-sentence-drop]");
+      if (!sentenceLine) return;
       event.preventDefault();
       event.dataTransfer.dropEffect = "move";
+      sentenceLine.classList.add("is-drop-target");
+    },
+    { signal: eventController.signal }
+  );
+  builder.addEventListener(
+    "dragleave",
+    (event) => {
+      const sentenceLine = event.target.closest("[data-sentence-drop]");
+      if (sentenceLine && !sentenceLine.contains(event.relatedTarget)) {
+        sentenceLine.classList.remove("is-drop-target");
+      }
     },
     { signal: eventController.signal }
   );
@@ -201,6 +221,7 @@ export function createEnglishLab(regions) {
       const sentence = event.target.closest("[data-sentence-drop]");
       if (!sentence) return;
       event.preventDefault();
+      sentence.classList.remove("is-drop-target");
       const wordId = getDragPayload(event);
       if (!(wordId in currentExercise().words)) return;
       const existingIndex = state.arrangement.indexOf(wordId);
@@ -223,7 +244,12 @@ export function createEnglishLab(regions) {
   );
   builder.addEventListener(
     "dragend",
-    (event) => event.target.closest(".word-token")?.classList.remove("is-dragging"),
+    (event) => {
+      event.target.closest(".word-token")?.classList.remove("is-dragging");
+      builder.querySelectorAll(".is-drop-target").forEach((target) =>
+        target.classList.remove("is-drop-target")
+      );
+    },
     { signal: eventController.signal }
   );
 
@@ -259,7 +285,7 @@ export function createEnglishLab(regions) {
     "click",
     () => {
       resetCurrent();
-      updateFeedback(regions.feedback, "Sentence cleared. Select words in the order you want.", "info");
+      updateFeedback(regions.feedback, "Sentence reset. Select words in the order you want.", "info");
     },
     { signal: eventController.signal }
   );
@@ -267,11 +293,14 @@ export function createEnglishLab(regions) {
     "click",
     () => {
       if (!state.completed) return;
-      state.exerciseIndex = (state.exerciseIndex + 1) % EXERCISES.length;
+      const isRestart = state.exerciseIndex === EXERCISES.length - 1;
+      state.exerciseIndex = isRestart ? 0 : state.exerciseIndex + 1;
       resetCurrent();
       updateFeedback(
         regions.feedback,
-        `Sentence ${state.exerciseIndex + 1} ready. Use the prompt to plan the word order.`,
+        isRestart
+          ? "All English sentences completed. The exercises have restarted at sentence 1."
+          : `Sentence ${state.exerciseIndex + 1} ready. Use the prompt to plan the word order.`,
         "info"
       );
     },
